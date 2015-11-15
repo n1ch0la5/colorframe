@@ -1,0 +1,11 @@
+{
+    "require": {
+        "symfony/console": "~2.0",
+        "php-ffmpeg/php-ffmpeg": "~0.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "n1ch0la5\\": "src"
+        }
+    }
+}

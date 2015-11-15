@@ -1,0 +1,265 @@
+<?php namespace n1ch0la5;
+
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use FFMpeg\FFMpeg;
+use FFMpeg\FFProbe;
+use FFMpeg\Coordinate\TimeCode;
+
+class ProcessCommand extends Command {
+    
+    private $ffmpeg;
+    private $ffprobe;
+    
+    public function __construct(FFMpeg $ffMpeg, FFProbe $ffProbe)
+    {
+        parent::__construct();
+        $this->ffmpeg = $ffMpeg;
+        $this->ffprobe = $ffProbe;
+    }
+    
+    public function configure()
+    {
+        $this->setName('process')
+             ->setDescription('Process video frames into colored bars.')
+             ->addOption('video', null, InputOption::VALUE_REQUIRED)
+             ->addOption('width', null, InputOption::VALUE_OPTIONAL, 'Set the width of the final image. Default is 1280', "1280");
+    }
+    
+    public function execute(InputInterface $input, OutputInterface $output)
+    {
+        // Set video path
+        $vidPath = getcwd() . '/videos/';
+        $vidName = $input->getOption('video');
+        $width = $input->getOption('width');
+        
+        $this->assertVideoExists($vidPath . $vidName, $output);
+        
+        $format = $this->ffprobe->format($vidPath . $vidName);
+        $duration = floor($format->get('duration'));
+        
+        $output->writeln('Processing ' . $duration . ' frames...');
+        
+        if( $duration > $width)
+        {
+            $frameSet = $duration / $width;
+            $frameSet = round($frameSet);
+        }
+        else
+        {
+            $frameSet = 1;
+        }
+        
+        $video = $this->ffmpeg->open($vidPath.$vidName);
+        //$video->save($format, getcwd() . 'video2.mp4');
+        
+        $framePath = $this->createFramePath($vidName);
+        
+        $n=0;
+        $fs=0;
+        for($i=0;$i<=$duration;$i++)
+        {
+            
+            //$frame = $video->frame( FFMpeg\Coordinate\TimeCode::fromSeconds($i) );
+            $tc = new Timecode(0,0,0,0);
+            $frame = $video->frame( $tc::fromSeconds($i) );
+
+            //$frame = $video->coordinate->timecode->fromSeconds($i);
+            
+            $imagePath = $this->saveFrame($frame, $framePath, $i);
+            
+            $colors[] = $this->getFrameColor($imagePath, $frameSet, $n);
+            
+            $this->show_status($i + 1, $duration, '25', $output);
+            
+            if($fs == $frameSet - 1){$fs = 0;$n++;}else{$fs++;}
+        }
+        
+        if($frameSet > 1)
+        {
+            $colorsNew = $this->colorSorter($colors, $frameSet);
+        }
+        else
+        {
+            $colorsNew = $colors;
+        }
+        
+        $file = $this->makeFileName($vidName, $width);
+        
+        print_r($colorsNew);
+
+        if( $this->saveFile($file, $colorsNew) )
+        {
+            $output->writeln('New file successfully created in '. $file);
+        }
+        
+        $this->cleanUp($framePath);
+    }
+    
+    private function getTimeCode(TimeCode $timeCode, $seconds)
+    {
+        $this->timecode = $timeCode->fromSeconds($seconds);
+    }
+    
+    private function saveFile($file, $colorsNew)
+    {
+        // write colors to file
+        $fp = fopen($file, 'w');
+        fwrite($fp, json_encode($colorsNew));
+        fclose($fp);
+    }
+    
+    private function makeFileName($vidName, $width)
+    {
+        return 'files/' . str_replace('.mp4', '', $vidName) . '_' . $width . '.json';
+    }
+    
+    private function assertVideoExists($vidPath, OutputInterface $output)
+    {
+        if( ! file_exists($vidPath) )
+        {
+            $output->writeln('Video does not exist at ' . $vidPath . '!');
+            exit(1);
+        }
+    }
+    
+    private function createFramePath($vidName)
+    {
+        $framePath = 'temp/'. $vidName;
+        if(!file_exists($framePath))
+        {
+            mkdir($framePath);
+        }
+        return $framePath;
+    }
+    
+    private function saveFrame($frame, $framePath, $i)
+    {
+        $imagePath = $framePath . '/' . $i . '.jpg';
+        $frame->save($imagePath);
+        return $imagePath;
+    }
+    
+    private function getFrameColor($imagePath, $frameSet, $n)
+    {
+        if( $image = imagecreatefromjpeg($imagePath) )
+        {   
+            $width = imagesx($image);
+            $height = imagesy($image);
+            $pixel = imagecreatetruecolor(1, 1);
+            imagecopyresampled($pixel, $image, 0, 0, 0, 0, 1, 1, $width, $height);
+            $rgb = imagecolorat($pixel, 0, 0);
+
+            $color = imagecolorsforindex($pixel, $rgb);
+            $hex = $this->rgb2hex( array( $color['red'], $color['green'], $color['blue'] ) );
+
+            if($frameSet == 1)
+            {
+                $colors[$n] = $hex;
+            }
+            else
+            {
+                $colors[$n][] = $hex;
+            }
+    
+            $this->cleanUp($imagePath);
+            
+            return $colors;
+        }
+    }
+    
+    private function rgb2hex($rgb) {
+        $hex = "#";
+        $hex .= str_pad(dechex($rgb[0]), 2, "0", STR_PAD_LEFT);
+        $hex .= str_pad(dechex($rgb[1]), 2, "0", STR_PAD_LEFT);
+        $hex .= str_pad(dechex($rgb[2]), 2, "0", STR_PAD_LEFT);
+
+        return $hex; // returns the hex value including the number sign (#)
+    }
+    
+    private function colorSorter($array, $frameSet)
+    {
+        global $vidWidth;
+        $counter = 0;
+
+        for($i=0;$i<=count($array)-1;$i++)
+        {
+            $newColor = $array[$i][0];
+            for($n=0;$n<=$frameSet-1;$n++)
+            {
+                $n++;
+                $colorAvg = averageColor( $newColor, $array[$i][$n] );
+                $newColor = $colorAvg;
+            }
+            unset($array[$i]);
+            $array[$i] = $newColor;
+            $counter++;
+            if($counter >= $vidWidth - 1)
+            {
+                echo $counter;
+                return $array;
+            }
+        }    
+        return $array;
+    }
+    
+    //Progress bar
+    private function show_status($done, $total, $size=30, OutputInterface $output) {
+
+        static $start_time;
+
+        // if we go over our bound, just ignore it
+        if($done > $total) return;
+
+        if(empty($start_time)) $start_time=time();
+        $now = time();
+
+        $perc=(double)($done/$total);
+
+        $bar=floor($perc*$size);
+
+        $status_bar="\r[";
+        $status_bar.=str_repeat("=", $bar);
+        if($bar<$size){
+            $status_bar.=">";
+            $status_bar.=str_repeat(" ", $size-$bar);
+        } else {
+            $status_bar.="=";
+        }
+
+        $disp=number_format($perc*100, 0);
+
+        $status_bar.="] $disp%  $done/$total";
+
+        $rate = ($now-$start_time)/$done;
+        $left = $total - $done;
+        $eta = round($rate * $left, 2);
+
+        $elapsed = $now - $start_time;
+
+        $status_bar.= " remaining: ".number_format($eta)." sec.  elapsed: ".number_format($elapsed)." sec.";
+
+        echo "$status_bar  ";
+        $output->writeln("$status_bar  ");
+
+        flush();
+
+        // when done, send a newline
+        if($done == $total) {
+            $output->writeln( PHP_EOL );
+        }
+    }
+    
+    private function cleanUp($path)
+    {
+        $realpath = realpath($path);
+        @chmod($realpath, 0777);
+        if(is_writable($realpath))
+        {
+            @unlink($realpath);
+        }
+    }
+}

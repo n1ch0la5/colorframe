@@ -1,0 +1,7 @@
+temp/*
+videos/*
+files/*
+!temp/index.php
+!videos/index.php
+!files/index.php
+!files/example.json

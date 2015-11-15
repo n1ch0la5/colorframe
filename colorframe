@@ -1,0 +1,16 @@
+#! /usr/bin/env php
+
+<?php
+
+use Symfony\Component\Console\Application;
+
+require 'vendor/autoload.php';
+
+$app = new Application('ColorFrame', '1.0');
+
+$ffMpeg = FFMpeg\FFMpeg::create();
+$ffProbe = FFMpeg\FFProbe::create();
+
+$app->add(new n1ch0la5\ProcessCommand( $ffMpeg, $ffProbe ));
+
+$app->run();
