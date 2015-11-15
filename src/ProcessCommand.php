@@ -89,8 +89,6 @@ class ProcessCommand extends Command {
         
         $file = $this->makeFileName($vidName, $width);
         
-        print_r($colorsNew);
-
         if( $this->saveFile($file, $colorsNew) )
         {
             $output->writeln('New file successfully created in '. $file);
@@ -191,7 +189,7 @@ class ProcessCommand extends Command {
             for($n=0;$n<=$frameSet-1;$n++)
             {
                 $n++;
-                $colorAvg = averageColor( $newColor, $array[$i][$n] );
+                $colorAvg = $this->averageColor( $newColor, $array[$i][$n] );
                 $newColor = $colorAvg;
             }
             unset($array[$i]);
@@ -205,6 +203,26 @@ class ProcessCommand extends Command {
         }    
         return $array;
     }
+    
+    private function averageColor($color1, $color2) {
+        $color = array(array($color1,0,0,0), array($color2,0,0,0), array("#",0,0,0));
+        for ($i=0; $i<2; $i++) {
+            $offset=0;
+            if (strlen($color[$i][0])>6) {
+                $offset=1;
+            }
+            $color[$i][1] = hexdec( substr($color[$i][0], 0+$offset, 2) ); // Red Decimal
+            $color[$i][1] = hexdec( substr($color[$i][0], 0+$offset, 2) ); // Red Decimal
+            $color[$i][2] = hexdec( substr($color[$i][0], 2+$offset, 2) ); // Green Decimal
+            $color[$i][3] = hexdec( substr($color[$i][0], 4+$offset, 2) ); // Blue Decimal
+        }
+        for ($i=1; $i<4; $i++) {
+            $color[2][$i] = round( ($color[0][$i] + $color[1][$i]) / 2 ); 
+            $color[2][0] = $color[2][0] . strtoupper( substr("0" . dechex($color[2][$i]), -2) );  // New Average Color Concatenation 
+        }
+
+        return ($color[2][0]); //return ($color[2][0]);
+}
     
     //Progress bar
     private function show_status($done, $total, $size=30, OutputInterface $output) {
