@@ -25,16 +25,16 @@ class ProcessCommand extends Command {
     {
         $this->setName('process')
              ->setDescription('Process video frames into colored bars.')
-             ->addOption('video', null, InputOption::VALUE_REQUIRED)
-             ->addOption('width', null, InputOption::VALUE_OPTIONAL, 'Set the width of the final image. Default is 1280', "1280");
+             ->addOption('v', null, InputOption::VALUE_REQUIRED)
+             ->addOption('w', null, InputOption::VALUE_OPTIONAL, 'Set the width of the final image. Default is 1280', "1280");
     }
     
     public function execute(InputInterface $input, OutputInterface $output)
     {
         // Set video path
         $vidPath = getcwd() . '/videos/';
-        $vidName = $input->getOption('video');
-        $width = $input->getOption('width');
+        $vidName = $input->getOption('v');
+        $width = $input->getOption('w');
         
         $this->assertVideoExists($vidPath . $vidName, $output);
         
