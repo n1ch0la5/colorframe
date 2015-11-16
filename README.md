@@ -3,7 +3,7 @@ Colorframe
 
 A PHP console application to generate averaged color hex codes from video frames.
 
-The hexcode json can be used to create movie color bars as seen on sites like http://moviebarcode.tumblr.com and http://thecolorsofmotion.com. This app only generates one color averaged hex code per frame. 
+The hex code json can then be used to create movie color bars as seen on sites like http://moviebarcode.tumblr.com and http://thecolorsofmotion.com. This app only generates one color averaged hex code per frame per second of video. 
 
 Requirements
 ============
@@ -14,7 +14,7 @@ Requirements
 Installation
 ============
 
-Install FFMpeg and FFProbe binaries. This app has only been tested on windows so far. You can find the windows binaries for FFMpeg [here](http://ffmpeg.zeranoe.com/builds/).
+Install FFMpeg and FFProbe binaries. This app has thus far only been tested on mp4 video files in windows. You can find the windows binaries for FFMpeg [here](http://ffmpeg.zeranoe.com/builds/).
 
 Run composer install on the colorframe directory
 
