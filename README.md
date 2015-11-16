@@ -1,4 +1,4 @@
-Colorframe
+ColorFrame
 ==========
 
 A PHP console application to generate averaged color hex codes (#000000) from video frames.

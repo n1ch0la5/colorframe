@@ -14,7 +14,7 @@ class ProcessCommand extends Command {
     private $ffMpeg;
     private $ffProbe;
     
-    public function __construct(FFMpeg $ffMpeg, FFProbe )
+    public function __construct(FFMpeg $ffMpeg, FFProbe $ffProbe)
     {
         parent::__construct();
         $this->ffmpeg = $ffMpeg;
