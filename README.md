@@ -1,7 +1,7 @@
 Colorframe
 ==========
 
-A PHP console application to generate averaged color hex odes from video frames.
+A PHP console application to generate averaged color hex codes from video frames.
 
 The hexcode json can be used to create movie color bars as seen on sites like http://moviebarcode.tumblr.com and http://thecolorsofmotion.com. This app only generates one color averaged hex code per frame. 
 
