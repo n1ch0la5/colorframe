@@ -54,26 +54,32 @@ class ProcessCommand extends Command {
         }
         
         $video = $this->ffmpeg->open($vidPath.$vidName);
-        //$video->save($format, getcwd() . 'video2.mp4');
         
         $framePath = $this->createFramePath($vidName);
         
         $n=0;
         $fs=0;
-        for($i=0;$i<=$duration;$i++)
+        for( $i=0; $i<=$duration; $i++ )
         {
-            
-            //$frame = $video->frame( FFMpeg\Coordinate\TimeCode::fromSeconds($i) );
             $tc = new Timecode(0,0,0,0);
+            
             $frame = $video->frame( $tc::fromSeconds($i) );
 
-            //$frame = $video->coordinate->timecode->fromSeconds($i);
-            
             $imagePath = $this->saveFrame($frame, $framePath, $i);
             
-            $colors[] = $this->getFrameColor($imagePath, $frameSet, $n);
+            $hex = $this->getFrameColor($imagePath, $frameSet, $n);
             
-            $this->showStatus($i + 1, $duration, '25', $output);
+            if($frameSet == 1)
+            {
+                $colors[$n] = $hex;
+            }
+            else
+            {
+                $colors[$n][] = $hex;
+            }
+            
+            // Update the progress bar
+            $this->showStatus($i + 1, $duration, '20', $output);
             
             if($fs == $frameSet - 1){$fs = 0;$n++;}else{$fs++;}
         }
@@ -154,28 +160,10 @@ class ProcessCommand extends Command {
             $color = imagecolorsforindex($pixel, $rgb);
             $hex = $this->rgb2hex( array( $color['red'], $color['green'], $color['blue'] ) );
 
-            if($frameSet == 1)
-            {
-                $colors[$n] = $hex;
-            }
-            else
-            {
-                $colors[$n][] = $hex;
-            }
-    
             $this->cleanUp($imagePath);
             
-            return $colors;
+            return $hex;
         }
-    }
-    
-    private function rgb2hex($rgb) {
-        $hex = "#";
-        $hex .= str_pad(dechex($rgb[0]), 2, "0", STR_PAD_LEFT);
-        $hex .= str_pad(dechex($rgb[1]), 2, "0", STR_PAD_LEFT);
-        $hex .= str_pad(dechex($rgb[2]), 2, "0", STR_PAD_LEFT);
-
-        return $hex; // returns the hex value including the number sign (#)
     }
     
     private function colorSorter($array, $frameSet)
@@ -203,7 +191,16 @@ class ProcessCommand extends Command {
         }    
         return $array;
     }
-    
+
+    private function rgb2hex($rgb) {
+        $hex = "#";
+        $hex .= str_pad(dechex($rgb[0]), 2, "0", STR_PAD_LEFT);
+        $hex .= str_pad(dechex($rgb[1]), 2, "0", STR_PAD_LEFT);
+        $hex .= str_pad(dechex($rgb[2]), 2, "0", STR_PAD_LEFT);
+
+        return $hex; // returns the hex value including the number sign (#)
+    }
+
     private function averageColor($color1, $color2) {
         $color = array(array($color1,0,0,0), array($color2,0,0,0), array("#",0,0,0));
         for ($i=0; $i<2; $i++) {
@@ -240,11 +237,16 @@ class ProcessCommand extends Command {
         $bar=floor($perc*$size);
 
         $statusBar="\r[";
+        
         $statusBar.=str_repeat("=", $bar);
-        if($bar<$size){
+        
+        if($bar<$size)
+        {
             $statusBar.=">";
             $statusBar.=str_repeat(" ", $size-$bar);
-        } else {
+        }
+        else
+        {
             $statusBar.="=";
         }
 
@@ -267,7 +269,7 @@ class ProcessCommand extends Command {
 
         // when done, send a newline
         if($done == $total) {
-            $output->writeln( PHP_EOL );
+            $output->writeln( "\n" );
         }
     }
     
