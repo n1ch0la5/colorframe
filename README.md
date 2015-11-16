@@ -2,7 +2,7 @@
 
 ffmpeg needs to be installed first.
 
-Save your mp4 video files in the /videos folder.
+Place your mp4 video files in the /videos folder.
 
 Within the colorframe directory on the command line, type...
 

@@ -11,10 +11,10 @@ use FFMpeg\Coordinate\TimeCode;
 
 class ProcessCommand extends Command {
     
-    private $ffmpeg;
-    private $ffprobe;
+    private $ffMpeg;
+    private $ffProbe;
     
-    public function __construct(FFMpeg $ffMpeg, FFProbe $ffProbe)
+    public function __construct(FFMpeg $ffMpeg, FFProbe )
     {
         parent::__construct();
         $this->ffmpeg = $ffMpeg;
@@ -73,7 +73,7 @@ class ProcessCommand extends Command {
             
             $colors[] = $this->getFrameColor($imagePath, $frameSet, $n);
             
-            $this->show_status($i + 1, $duration, '25', $output);
+            $this->showStatus($i + 1, $duration, '25', $output);
             
             if($fs == $frameSet - 1){$fs = 0;$n++;}else{$fs++;}
         }
@@ -225,43 +225,43 @@ class ProcessCommand extends Command {
 }
     
     //Progress bar
-    private function show_status($done, $total, $size=30, OutputInterface $output) {
-
-        static $start_time;
+    private function showStatus($done, $total, $size=30, OutputInterface $output)
+    {
+        static $startTime;
 
         // if we go over our bound, just ignore it
         if($done > $total) return;
 
-        if(empty($start_time)) $start_time=time();
+        if(empty($startTime)) $startTime=time();
         $now = time();
 
         $perc=(double)($done/$total);
 
         $bar=floor($perc*$size);
 
-        $status_bar="\r[";
-        $status_bar.=str_repeat("=", $bar);
+        $statusBar="\r[";
+        $statusBar.=str_repeat("=", $bar);
         if($bar<$size){
-            $status_bar.=">";
-            $status_bar.=str_repeat(" ", $size-$bar);
+            $statusBar.=">";
+            $statusBar.=str_repeat(" ", $size-$bar);
         } else {
-            $status_bar.="=";
+            $statusBar.="=";
         }
 
         $disp=number_format($perc*100, 0);
 
-        $status_bar.="] $disp%  $done/$total";
+        $statusBar.="] $disp%  $done/$total";
 
-        $rate = ($now-$start_time)/$done;
+        $rate = ($now-$startTime)/$done;
         $left = $total - $done;
         $eta = round($rate * $left, 2);
 
-        $elapsed = $now - $start_time;
+        $elapsed = $now - $startTime;
 
-        $status_bar.= " remaining: ".number_format($eta)." sec.  elapsed: ".number_format($elapsed)." sec.";
+        $statusBar.= " remaining: ".number_format($eta)." sec.  elapsed: ".number_format($elapsed)." sec.";
 
-        echo "$status_bar  ";
-        $output->writeln("$status_bar  ");
+        echo "$statusBar  ";
+        $output->writeln("$statusBar  ");
 
         flush();
 
