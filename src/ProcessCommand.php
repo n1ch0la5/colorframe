@@ -34,12 +34,14 @@ class ProcessCommand extends Command {
         // Set video path
         $vidPath = getcwd() . '/videos/';
         $vidName = $input->getOption('v');
+        $vidFullPath = $vidPath . $vidName;
         $width = $input->getOption('w');
         
-        $this->assertVideoExists($vidPath . $vidName, $output);
+        $this->assertVideoExists( $vidFullPath, $output );
         
-        $format = $this->ffprobe->format($vidPath . $vidName);
-        $duration = floor($format->get('duration'));
+        $format = $this->ffprobe->format( $vidFullPath );
+        
+        $duration = floor( $format->get('duration') );
         
         $output->writeln('Processing ' . $duration . ' frames...');
         
@@ -53,9 +55,9 @@ class ProcessCommand extends Command {
             $frameSet = 1;
         }
         
-        $video = $this->ffmpeg->open($vidPath.$vidName);
+        $video = $this->ffmpeg->open( $vidFullPath );
         
-        $framePath = $this->createFramePath($vidName);
+        $framePath = $this->createFramePath( $vidName );
         
         $n=0;
         $fs=0;
@@ -65,9 +67,9 @@ class ProcessCommand extends Command {
             
             $frame = $video->frame( $tc::fromSeconds($i) );
 
-            $imagePath = $this->saveFrame($frame, $framePath, $i);
+            $imagePath = $this->saveFrame( $frame, $framePath, $i );
             
-            $hex = $this->getFrameColor($imagePath, $frameSet, $n);
+            $hex = $this->getFrameColor( $imagePath, $frameSet, $n );
             
             if($frameSet == 1)
             {

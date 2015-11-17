@@ -3,7 +3,7 @@ ColorFrame
 
 A PHP console application that generates averaged color hex codes (#000000) from video frames. The app saves a  frame for every second of video as an image and averages the colors of that frame into a hex code. The resulting array can be used to make pretty color blocked images out of your favorite movies.
 
-The hex codes are saved to a json file that can then be used to create movie color bars as seen on sites likehttp://moviebarcode.tumblr.com and http://thecolorsofmotion.com. The app generates one color averaged hex code per frame per one second of video.
+The hex codes are saved to a json file that can then be used to create movie color bars as seen on sites like http://moviebarcode.tumblr.com and http://thecolorsofmotion.com. The app generates one color averaged hex code per frame per one second of video.
 
 Requirements
 ============
