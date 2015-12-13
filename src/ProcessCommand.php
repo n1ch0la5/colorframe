@@ -24,7 +24,7 @@ class ProcessCommand extends Command {
     public function configure()
     {
         $this->setName('process')
-             ->setDescription('Process video frames into colored bars.')
+             ->setDescription('Process video frames into an array of hex codes.')
              ->addOption('v', null, InputOption::VALUE_REQUIRED)
              ->addOption('w', null, InputOption::VALUE_OPTIONAL, 'Set the width of the final image. Default is 1280', "1280");
     }
@@ -194,7 +194,8 @@ class ProcessCommand extends Command {
         return $array;
     }
 
-    private function rgb2hex($rgb) {
+    private function rgb2hex($rgb)
+    {
         $hex = "#";
         $hex .= str_pad(dechex($rgb[0]), 2, "0", STR_PAD_LEFT);
         $hex .= str_pad(dechex($rgb[1]), 2, "0", STR_PAD_LEFT);
@@ -203,7 +204,8 @@ class ProcessCommand extends Command {
         return $hex; // returns the hex value including the number sign (#)
     }
 
-    private function averageColor($color1, $color2) {
+    private function averageColor($color1, $color2)
+    {
         $color = array(array($color1,0,0,0), array($color2,0,0,0), array("#",0,0,0));
         for ($i=0; $i<2; $i++) {
             $offset=0;
@@ -276,9 +278,11 @@ class ProcessCommand extends Command {
     }
     
     private function cleanUp($path)
-    {
+    {      
         $realpath = realpath($path);
+        
         @chmod($realpath, 0777);
+        
         if(is_writable($realpath))
         {
             @unlink($realpath);
