@@ -14,7 +14,7 @@ Requirements
 Installation
 ============
 
-php-ffmpeg requires installation of the FFMpeg and FFProbe binaries. This app has thus far only been tested on mp4 video files on a  Windows machine. You can find the windows binaries for FFMpeg [here](http://ffmpeg.zeranoe.com/builds/). Download the static binaries, unzip the contents to a folder and put the path to the folder in your system PATH. (C:\ffmpeg or C:\Users\<USERNAME>\ffmpeg for example).
+php-ffmpeg requires installation of the FFMpeg and FFProbe Static binaries. This app has thus far only been tested on mp4 video files on a  Windows machine. You can find the windows binaries for FFMpeg [here](http://ffmpeg.zeranoe.com/builds/). Download the static binaries, unzip the contents to a folder and put the path to the folder in your system PATH. (C:\ffmpeg\bin or C:\Users\<USERNAME>\ffmpeg\bin for example).
 
 Usage
 =====
@@ -23,7 +23,7 @@ Place an mpeg video file in the /videos folder.
 
 From the command line, cd into the colorframe directory...
 
-    $ cf process --v=video.mp4 --w=1280
+    $ php cf process --v=video.mp4 --w=1280
 
 where --v is the name of the video file and --w is the width in pixels of your final color bar. --w is optional and default is set to 1280. 
 
